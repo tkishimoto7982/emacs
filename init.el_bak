@@ -1,0 +1,333 @@
+(setq load-path (append
+'("~/.emacs.d"
+"~/.emacs.d/packages")
+load-path)) 
+
+;; auto-install
+(add-to-list 'load-path "~/.emacs.d/auto-install")
+;; (require 'auto-install)
+;; (auto-install-update-emacswiki-package-name t)
+;; (auto-install-compatibility-setup)
+;; (setq ediff-window-setup-function 'ediff-setup-windows-plain)
+
+;; load yatex 
+(setq load-path 
+       (cons (expand-file-name "~/.emacs.d/packages/yatex1.78.4") load-path))
+
+ ;; add yatex-mode
+ (setq auto-mode-alist
+      (cons (cons "\\.tex$" 'yatex-mode) auto-mode-alist))
+
+ (autoload 'yatex-mode "yatex" "Yet Another LaTeX mode" t)
+
+ ;; xdvi settings
+ (setq dvi2-command (concat "pxdvi -editor 'emacsclient +%l %f'")) ; reverse search
+
+ ;; kanji code setting
+ (defvar YaTeX-kanji-code 4
+  "*File kanji code used by Japanese TeX.
+ nil: Do not care (Preserve coding-system)
+ 0: no-converion (mule)
+ 1: Shift JIS
+ 2: JIS
+ 3: EUC
+ 4: UTF-8")
+
+;; set default command for latex compile
+(setq tex-command "latexmk -latex='platex --src-specials' -f")
+
+(add-hook'yatex-mode-hook'(lambda()(setq auto-fill-function nil)))
+
+;;; auto-install
+;(require 'auto-install)
+;(setq auto-install-directory "~/.emacs.d/packages/")
+;(add-to-list 'load-path auto-install-directory)
+;(auto-install-update-emacswiki-package-name t)
+;(auto-install-compatibility-setup)
+;(setq ediff-window-setup-function 'ediff-setup-windows-plain)
+
+;; spice-mode
+(setq load-path (cons (expand-file-name "~/.emacs.d/spice-mode/") load-path))
+
+(autoload 'spice-mode "spice-mode" "Spice/Layla Editing Mode" t)
+(setq auto-mode-alist (append (list (cons "\\.sp$" 'spice-mode)
+				    (cons "\\.spi$" 'spice-mode)
+				    (cons "\\.net$" 'spice-mode)
+				    (cons "\\.gds$" 'spice-mode)
+				    (cons "\\.str$" 'spice-mode)
+				    (cons "\\.str.net$" 'spice-mode)
+				    (cons "\\.cir$" 'spice-mode)
+				    (cons "\\.ckt$" 'spice-mode)
+				    (cons "\\.mod$" 'spice-mode)
+				    (cons "\\.cdl$" 'spice-mode)
+				    (cons "\\.chi$" 'spice-mode) ;eldo outpt
+				    (cons "\\.inp$" 'spice-mode))
+				 auto-mode-alist))
+
+;; ;;C言語関係
+;; (setq c-tab-always-indent t)
+;; (setq c-auto-newline t)
+
+;; ;;perl関係
+;; (autoload 'cperl-mode "cperl-mode" "alternate mode for editing Perl programs" t)
+
+;; (add-hook 'cperl-mode-hook ;;c-c d デバッグ　c-c c チェック
+;;           (lambda ()
+;;             (require 'perl-debug)
+;;             (perl-debug-set-coding-system)
+;;             (define-key perl-mode-map "\C-cc" 'perl-debug-lint)
+;;             (define-key cperl-mode-map "\C-cd" 'perl-debug)))
+
+;; ;; flymake (Emacs22から標準添付されている)
+;; (require 'flymake)
+
+;; ;; set-perl5lib
+;; ;; 開いたスクリプトのパスに応じて、@INCにlibを追加してくれる
+;; ;; 以下からダウンロードする必要あり
+;; ;; http://svn.coderepos.org/share/lang/elisp/set-perl5lib/set-perl5lib.el
+;; (require 'set-perl5lib)
+
+;; ;; エラー、ウォーニング時のフェイス
+;; (set-face-background 'flymake-errline "red4")
+;; (set-face-foreground 'flymake-errline "black")
+;; (set-face-background 'flymake-warnline "yellow")
+;; (set-face-foreground 'flymake-warnline "black")
+
+;; ;; エラーをミニバッファに表示
+;; ;; http://d.hatena.ne.jp/xcezx/20080314/1205475020
+;; (defun flymake-display-err-minibuf ()
+;;   "Displays the error/warning for the current line in the minibuffer"
+;;   (interactive)
+;;   (let* ((line-no             (flymake-current-line-no))
+;;          (line-err-info-list  (nth 0 (flymake-find-err-info flymake-err-info line-no)))
+;;          (count               (length line-err-info-list)))
+;;     (while (> count 0)
+;;       (when line-err-info-list
+;;         (let* ((file       (flymake-ler-file (nth (1- count) line-err-info-list)))
+;;                (full-file  (flymake-ler-full-file (nth (1- count) line-err-info-list)))
+;;                (text (flymake-ler-text (nth (1- count) line-err-info-list)))
+;;                (line       (flymake-ler-line (nth (1- count) line-err-info-list))))
+;;           (message "[%s] %s" line text)))
+;;       (setq count (1- count)))))
+
+;; Perl用設定
+;; http://unknownplace.org/memo/2007/12/21#e001
+;(defvar flymake-perl-err-line-patterns
+;  '(("\\(.*\\) at \\([^ \n]+\\) line \\([0-9]+\\)[,.\n]" 2 3 nil 1)))
+;
+;(defconst flymake-allowed-perl-file-name-masks
+;  '(("\\.pl$" flymake-perl-init)
+;    ("\\.pm$" flymake-perl-init)
+;;     ("\\.t$" flymake-perl-init)))
+
+;; (defun flymake-perl-init ()
+;;   (let* ((temp-file (flymake-init-create-temp-buffer-copy
+;;                      'flymake-create-temp-inplace))
+;;          (local-file (file-relative-name
+;;                       temp-file
+;;                       (file-name-directory buffer-file-name))))
+;;     (list "perl" (list "-wc" local-file))))
+
+;; (defun flymake-perl-load ()
+;;   (interactive)
+;;   (defadvice flymake-post-syntax-check (before flymake-force-check-was-interrupted)
+;;     (setq flymake-check-was-interrupted t))
+;;   (ad-activate 'flymake-post-syntax-check)
+;;   (setq flymake-allowed-file-name-masks (append flymake-allowed-file-name-masks flymake-allowed-perl-file-name-masks))
+;;   (setq flymake-err-line-patterns flymake-perl-err-line-patterns)
+;;   (set-perl5lib)
+;;   (flymake-mode t))
+
+;; (add-hook 'cperl-mode-hook 'flymake-perl-load)
+
+
+;;mozc関係
+(require 'mozc)
+(set-language-environment "japanese")
+(setq default-input-method "japanese-mozc")
+(prefer-coding-system 'utf-8)
+
+(set-buffer-file-coding-system 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(setq default-buffer-file-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(global-set-key (kbd "<zenkaku-hankaku>") 'toggle-input-method)
+(add-hook 'mozc-mode-hook
+  (lambda()
+    (define-key mozc-mode-map (kbd "<zenkaku-hankaku>") 'toggle-input-method)))
+
+;; C-x C-fの際に大文字を補完
+(setq read-file-name-completion-ignore-case t)
+(setq display-time-24hr-format t)
+
+(global-set-key "\C-x\C-g" 'goto-line)	   ;;C-x,C-gで行指定ジャンプ
+;;文字列サーチ
+(define-key isearch-mode-map "\C-k" 'isearch-edit-string)
+
+(global-linum-mode t)
+(show-paren-mode t)
+(line-number-mode t)
+(column-number-mode t)
+(recentf-mode t)
+(delete-selection-mode 1)
+(setq frame-title-format "%f")
+
+(defface hlline-face
+  '((((class color)
+      (background dark))
+     (:background "dark slate gray"))
+    (((class color)
+      (background light))
+     (:background  "#98FB98"))
+    (t
+     ()))
+  "*Face used by hl-line.")
+(setq hl-line-face 'hlline-face)
+(global-hl-line-mode)
+
+(define-key global-map (kbd "C-z") 'undo)
+(setq quail-japanese-use-double-n t)
+(set-scroll-bar-mode 'right)
+(setq inhibit-startup-message t)
+;;; バックアップファイルを作らない
+(setq backup-inhibited t)
+;;; 終了時にオートセーブファイルを消す
+(setq delete-auto-save-files t)
+
+;文字背景色
+(custom-set-faces
+ '(default ((t
+             (:background "black" :foreground "#55FF55")
+             ))))
+ '(cursor ((((class color)
+             (background dark))
+            (:background "#00AA00"))
+           (((class color)
+             (background light))
+            (:background "#999999"))
+           (t ())
+           ))
+
+  (add-to-list 'default-frame-alist '(foreground-color . "white"))
+
+(defun revert-buffer-no-confirm (&optional force-reverting)
+  "Interactive call to revert-buffer. Ignoring the auto-save
+ file and not requesting for confirmation. When the current buffer
+ is modified, the command refuses to revert it, unless you specify
+ the optional argument: force-reverting to true."
+  (interactive "P")
+  ;;(message "force-reverting value is %s" force-reverting)
+  (if (or force-reverting (not (buffer-modified-p)))
+      (revert-buffer :ignore-auto :noconfirm)
+    (error "The buffer has been modified")))
+
+;; reload buffer
+(global-set-key (kbd "<f5>") 'revert-buffer-no-confirm)
+
+;; tabber-mode
+
+(require 'tabbar)
+;; タブ上でマウスホイール操作無効
+(tabbar-mwheel-mode -1)
+;; グループ化しない
+(setq tabbar-buffer-groups-function nil)
+;; 画像を使わないことで軽量化する
+(setq tabbar-use-images nil)
+;; key bindings
+(global-set-key [(C-tab)]   'tabbar-forward-tab)
+(global-set-key [(C-shift-tab)] 'tabbar-backward-tab)
+(global-set-key (kbd "M-<right>") 'tabbar-forward-tab)
+(global-set-key (kbd "M-<left>") 'tabbar-backward-tab)
+
+(defun my-tabbar-buffer-list ()
+  (delq nil
+        (mapcar #'(lambda (b)
+                    (cond
+                     ;; Always include the current buffer.
+                     ((eq (current-buffer) b) b)
+                     ((buffer-file-name b) b)
+                     ((char-equal ?\  (aref (buffer-name b) 0)) nil)
+		     ;; ((equal "*scratch*" (buffer-name b)) b) ; *scratch*バッファは表示する
+		     ((char-equal ?* (aref (buffer-name b) 0)) nil) ; それ以外の * で始まるバッファは表示しない
+                     ((buffer-live-p b) b)))
+                (buffer-list))))
+(setq tabbar-buffer-list-function 'my-tabbar-buffer-list)
+;; F4 で tabbar-mode
+(global-set-key [f4] 'tabbar-mode)
+
+(when (require 'redo+ nil t)
+  (define-key global-map (kbd "C-/") 'redo))
+
+(global-set-key (kbd "C-<left>")  'windmove-left)
+(global-set-key (kbd "C-<down>")  'windmove-down)
+(global-set-key (kbd "C-<up>")    'windmove-up)
+(global-set-key (kbd "C-<right>") 'windmove-right)
+
+;;auto-revert-mode
+(global-set-key [f7] 'auto-revert-mode)
+
+;;global-aut-revert
+(global-set-key [f8] 'global-auto-revert-mode)
+
+;;分割ウインドウサイズ変更
+(defun window-resizer ()
+  "Control window size and position."
+  (interactive)
+  (let ((window-obj (selected-window))
+        (current-width (window-width))
+        (current-height (window-height))
+        (dx (if (= (nth 0 (window-edges)) 0) 1
+              -1))
+        (dy (if (= (nth 1 (window-edges)) 0) 1
+              -1))
+        c)
+    (catch 'end-flag
+      (while t
+        (message "size[%dx%d]"
+                 (window-width) (window-height))
+        (setq c (read-char))
+        (cond ((= c ?6)
+               (enlarge-window-horizontally dx))
+              ((= c ?4)
+               (shrink-window-horizontally dx))
+              ((= c ?2)
+               (enlarge-window dy))
+              ((= c ?8)
+               (shrink-window dy))
+              ;; otherwise
+              (t
+               (message "Quit")
+               (throw 'end-flag t)))))))
+
+(global-set-key [f9] 'window-resizer)
+
+;;領域選択
+(setq pc-select-selection-keys-only t)
+(pc-selection-mode 1)
+
+;; ;; マウスのホイールスクロールスピードを調節
+;; ;; (連続して回しているととんでもない早さになってしまう。)
+;; (global-set-key [wheel-up] '(lambda () "" (interactive) (scroll-down 1)))
+;; (global-set-key [wheel-down] '(lambda () "" (interactive) (scroll-up 1)))
+;; (global-set-key [double-wheel-up] '(lambda () "" (interactive) (scroll-down 1)))
+;; (global-set-key [double-wheel-down] '(lambda () "" (interactive) (scroll-up 1)))
+;; (global-set-key [triple-wheel-up] '(lambda () "" (interactive) (scroll-down 2)))
+;; (global-set-key [triple-wheel-down] '(lambda () "" (interactive) (scroll-up 2)))
+
+(setq mouse-wheel-scroll-amount '(3 ((shift) . 10)((control) . 1))) ;; one line at a time
+(setq mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
+(setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
+
+;; yes or noをy or n
+(fset 'yes-or-no-p 'y-or-n-p)
+
+;; (require 'anything-startup)
+;; (global-set-key (kbd "C-x b") 'anything)
+
+;; (require 'anzu)
+;; (global-anzu-mode 1)
+;; (custom-set-variables
+;;  '(anzu-mode-lighter "")
+;;  '(anzu-deactivate-region t)
+;;  '(anzu-search-threshold 1000))

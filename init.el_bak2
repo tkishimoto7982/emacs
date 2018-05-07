@@ -1,0 +1,443 @@
+(require 'package)
+;; (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
+;; (add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/") t)
+;; (add-to-list 'package-archives  '("marmalade" . "http://marmalade-repo.org/packages/") t)
+;; (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/") t)
+(package-initialize)
+
+(when (require 'undohist nil t)
+  (undohist-initialize))
+
+(add-to-list 'load-path "~/.emacs.d/packages")
+;; auto-install
+;; (add-to-list 'load-path "~/.emacs.d/auto-install")
+;; load yatex 
+(setq load-path 
+      (cons (expand-file-name "~/.emacs.d/packages/yatex1.78.4") load-path))
+
+;; add yatex-mode
+(setq auto-mode-alist
+      (cons (cons "\\.tex$" 'yatex-mode) auto-mode-alist))
+
+(autoload 'yatex-mode "yatex" "Yet Another LaTeX mode" t)
+
+;; xdvi settings
+(setq dvi2-command (concat "pxdvi -editor 'emacsclient +%l %f'")) ; reverse search
+
+;; kanji code setting
+(defvar YaTeX-kanji-code 4
+  "*File kanji code used by Japanese TeX.
+ nil: Do not care (Preserve coding-system)
+ 0: no-converion (mule)
+ 1: Shift JIS
+ 2: JIS
+ 3: EUC
+ 4: UTF-8")
+
+;; set default command for latex compile
+(setq tex-command "latexmk -latex='platex --src-specials' -f")
+
+;; spice-mode
+(setq load-path (cons (expand-file-name "~/.emacs.d/spice-mode/") load-path))
+
+(autoload 'spice-mode "spice-mode" "Spice/Layla Editing Mode" t)
+(setq auto-mode-alist (append (list (cons "\\.sp$" 'spice-mode)
+				    (cons "\\.spi$" 'spice-mode)
+				    (cons "\\.net$" 'spice-mode)
+				    (cons "\\.gds$" 'spice-mode)
+				    (cons "\\.str$" 'spice-mode)
+				    (cons "\\.str.net$" 'spice-mode)
+				    (cons "\\.cir$" 'spice-mode)
+				    (cons "\\.ckt$" 'spice-mode)
+				    (cons "\\.mod$" 'spice-mode)
+				    (cons "\\.cdl$" 'spice-mode)
+				    (cons "\\.chi$" 'spice-mode) ;eldo outpt
+				    (cons "\\.inp$" 'spice-mode))
+			      auto-mode-alist))
+
+;;mozc関係
+(add-to-list 'load-path "~/.emacs.d/mozc")
+(require 'mozc)
+(set-language-environment "japanese")
+(setq default-input-method "japanese-mozc")
+(prefer-coding-system 'utf-8)
+
+(set-buffer-file-coding-system 'utf-8)
+(set-terminal-coding-system 'utf-8)
+(set-keyboard-coding-system 'utf-8)
+(setq default-buffer-file-coding-system 'utf-8)
+(set-default-coding-systems 'utf-8)
+(global-set-key (kbd "<zenkaku-hankaku>") 'toggle-input-method)
+(global-set-key (kbd "C-¥") 'toggle-input-method)
+(add-hook 'mozc-mode-hook
+	  (lambda()
+	    (define-key mozc-mode-map (kbd "<zenkaku-hankaku>") 'toggle-input-method)))
+
+(add-hook 'mozc-mode-hook
+	  (lambda()
+	    (define-key mozc-mode-map (kbd "C-¥") 'toggle-input-method)))
+
+;; C-x C-fの際に大文字を補完
+(setq read-file-name-completion-ignore-case t)
+(setq display-time-24hr-format t)
+
+(global-set-key "\C-x\C-g" 'goto-line)	   ;;C-x,C-gで行指定ジャンプ
+;;文字列サーチ
+(define-key isearch-mode-map "\C-k" 'isearch-edit-string)
+
+(global-linum-mode t)
+(show-paren-mode t)
+(line-number-mode t)
+(column-number-mode t)
+(recentf-mode t)
+(delete-selection-mode 1)
+(setq frame-title-format "%f")
+
+(defface hlline-face
+  '((((class color)
+      (background dark))
+     (:background "dark slate gray"))
+    (((class color)
+      (background light))
+     (:background  "#98FB98"))
+    (t
+     ()))
+  "*Face used by hl-line.")
+(setq hl-line-face 'hlline-face)
+(global-hl-line-mode)
+
+(define-key global-map (kbd "C-z") 'undo)
+(setq quail-japanese-use-double-n t)
+(set-scroll-bar-mode 'right)
+(setq inhibit-startup-message t)
+;;; バックアップファイルを作らない
+(setq backup-inhibited t)
+;;; 終了時にオートセーブファイルを消す
+(setq delete-auto-save-files t)
+
+					;文字背景色
+(custom-set-faces
+ '(default ((t (:stipple nil :background "black" :foreground "white" :inverse-video nil :box nil :strike-through nil :overline nil :underline nil :slant normal :weight normal :height 114 :width normal :foundry "unknown" :family "VL Gothic")))))
+'(cursor ((((class color)
+	    (background dark))
+	   (:background "#00AA00"))
+	  (((class color)
+	    (background light))
+	   (:background "#999999"))
+	  (t ())
+	  ))
+
+(add-to-list 'default-frame-alist '(foreground-color . "white"))
+
+(defun revert-buffer-no-confirm (&optional force-reverting)
+  "Interactive call to revert-buffer. Ignoring the auto-save
+ file and not requesting for confirmation. When the current buffer
+ is modified, the command refuses to revert it, unless you specify
+ the optional argument: force-reverting to true."
+  (interactive "P")
+  ;;(message "force-reverting value is %s" force-reverting)
+  (if (or force-reverting (not (buffer-modified-p)))
+      (revert-buffer :ignore-auto :noconfirm)
+    (error "The buffer has been modified")))
+
+;; reload buffer
+(global-set-key (kbd "<f5>") 'revert-buffer-no-confirm)
+
+;; tabber-mode
+
+(require 'tabbar)
+;; タブ上でマウスホイール操作無効
+(tabbar-mwheel-mode nil)
+;; グループ化しない
+(setq tabbar-buffer-groups-function nil)
+;; 画像を使わないことで軽量化する
+(setq tabbar-use-images nil)
+;; key bindings
+(global-set-key [(C-tab)]   'tabbar-forward-tab)
+(global-set-key [(C-shift-tab)] 'tabbar-backward-tab)
+(global-set-key (kbd "M-<right>") 'tabbar-forward-tab)
+(global-set-key (kbd "M-<left>") 'tabbar-backward-tab)
+
+(defun my-tabbar-buffer-list ()
+  (delq nil
+        (mapcar #'(lambda (b)
+                    (cond
+                     ;; Always include the current buffer.
+                     ((eq (current-buffer) b) b)
+                     ((buffer-file-name b) b)
+                     ((char-equal ?\  (aref (buffer-name b) 0)) nil)
+		     ((equal "*terminal*" (buffer-name b)) b) ; *terminal*バッファは表示する
+		     ((char-equal ?* (aref (buffer-name b) 0)) nil) ; それ以外の * で始まるバッファは表示しない
+                     ((buffer-live-p b) b)))
+                (buffer-list))))
+(setq tabbar-buffer-list-function 'my-tabbar-buffer-list)
+;; F4 で tabbar-mode
+(global-set-key [f4] 'tabbar-mode)
+
+(require 'undo-tree)
+(global-undo-tree-mode t)
+(global-set-key (kbd "M-z") 'undo-tree-redo)
+
+;; ;;tmuxとのprefix互換性
+(global-set-key (kbd "C-a") 'nil)
+
+(defun my-move-beginning-of-line ()
+  (interactive)
+  (if (bolp)
+      (back-to-indentation)    
+      (beginning-of-line)))
+
+(global-set-key "\C-a\C-a"'my-move-beginning-of-line)
+
+(global-set-key (kbd "C-a <left>")  'windmove-left)
+(global-set-key (kbd "C-a <down>")  'windmove-down)
+(global-set-key (kbd "C-a <up>")    'windmove-up)
+(global-set-key (kbd "C-a <right>") 'windmove-right)
+
+(global-set-key (kbd "C-<left>")  'windmove-left)
+(global-set-key (kbd "C-<down>")  'windmove-down)
+(global-set-key (kbd "C-<up>")    'windmove-up)
+(global-set-key (kbd "C-<right>") 'windmove-right)
+
+;;auto-revert-mode
+(global-set-key [f7] 'auto-revert-mode)
+
+;;global-aut-revert
+(global-set-key [f8] 'global-auto-revert-mode)
+
+;;分割ウインドウサイズ変更
+(defun window-resizer ()
+  "Control window size and position."
+  (interactive)
+  (let ((window-obj (selected-window))
+        (current-width (window-width))
+        (current-height (window-height))
+        (dx (if (= (nth 0 (window-edges)) 0) 1
+              -1))
+        (dy (if (= (nth 1 (window-edges)) 0) 1
+              -1))
+        c)
+    (catch 'end-flag
+      (while t
+        (message "size[%dx%d]"
+                 (window-width) (window-height))
+        (setq c (read-char))
+        (cond ((= c ?6)
+               (enlarge-window-horizontally dx))
+              ((= c ?4)
+               (shrink-window-horizontally dx))
+              ((= c ?2)
+               (enlarge-window dy))
+              ((= c ?8)
+               (shrink-window dy))
+              ;; otherwise
+              (t
+               (message "Quit")
+               (throw 'end-flag t)))))))
+
+(global-set-key [f9] 'window-resizer)
+
+(setq mouse-wheel-scroll-amount '(3 ((shift) . 10)((control) . 1))) ;; one line at a time
+(setq mouse-wheel-progressive-speed nil) ;; don't accelerate scrolling
+(setq mouse-wheel-follow-mouse 't) ;; scroll window under mouse
+
+;; yes or noをy or n
+(fset 'yes-or-no-p 'y-or-n-p)
+
+(require 'anzu)
+(global-anzu-mode 1)
+(custom-set-variables
+ '(anzu-mode-lighter "")
+ '(anzu-deactivate-region t)
+ '(anzu-search-threshold 1000))
+(global-set-key [remap query-replace] 'anzu-query-replace)
+(global-set-key [remap query-replace-regexp] 'anzu-query-replace-regexp)
+
+(require 'zlc)
+(zlc-mode t)
+(let ((map minibuffer-local-map))
+  (define-key map (kbd "<down>")  'zlc-select-next-vertical)
+  (define-key map (kbd "<up>")    'zlc-select-previous-vertical)
+  (define-key map (kbd "<right>") 'zlc-select-next)
+  (define-key map (kbd "<left>")  'zlc-select-previous)
+  (define-key map (kbd "M-<tab>") 'zlc-select-previous)
+  (define-key map (kbd "M-TAB") 'zlc-select-previous)
+  ;;; reset selection
+  (define-key map (kbd "C-a c") 'zlc-reset))
+;;一括インデント
+(defun all-indent ()
+  (interactive)
+  (save-excursion
+    (indent-region (point-min) (point-max))))
+
+(defun electric-indent ()
+  "Indent specified region.
+When resion is active, indent region.
+Otherwise indent whole buffer."
+  (interactive)
+  (if (use-region-p)
+      (indent-region (region-beginning) (region-end))
+    (all-indent)))
+
+(global-set-key (kbd "C-M-\\") 'electric-indent)
+
+(add-hook 'dired-load-hook
+          '(lambda ()
+             ;; ディレクトリを再帰的にコピー可能にする
+             (setq dired-recursive-copies 'always)
+             ;; lsのオプション 「l」(小文字のエル)は必須
+             (setq dired-listing-switches "-FlhtA")
+             ;; find-dired/find-grep-diredで、条件に合ったファイルをリストする形式
+             (setq find-ls-option '("-print0 | xargs -0 ls -Flhatd"))
+             ;; 無効コマンドdired-find-alternate-fileを有効にする
+             (put 'dired-find-alternate-file 'disabled nil)))
+;; ファイル・ディレクトリ名のリストを編集することで、まとめてリネーム可能にする
+(require 'wdired)
+;; wdiredモードに入るキー(下の例では「r」)
+(define-key dired-mode-map "r" 'wdired-change-to-wdired-mode)
+;; 新規バッファを作らずにディレクトリを開く(デフォルトは「a」)
+(define-key dired-mode-map (kbd "RET") 'dired-find-alternate-file)
+;; 「a」を押したときに新規バッファを作って開くようにする
+(define-key dired-mode-map "a" 'dired-advertised-find-file)
+
+(ffap-bindings)
+
+;;M-x r-p-o RET で「、。」に，M-x r-p-, RET で「，。」に，M-x r-p-. RET で「，．」に，変換
+(defun replace-punctuation (a1 a2 b1 b2)
+  "Replace periods and commas"
+  (let ((s1 (if mark-active "選択領域" "バッファ全体"))
+        (s2 (concat a2 b2))
+        (b (if mark-active (region-beginning) (point-min)))
+        (e (if mark-active (region-end) (point-max))))
+    (if (y-or-n-p (concat s1 "の句読点を「" s2 "」にしますがよろしいですか?"))
+        (progn
+          (replace-string a1 a2 nil b e)
+          (replace-string b1 b2 nil b e)))))
+(defun replace-punctuation-ten-maru ()
+  "選択領域またはバッファ全体の句読点を「、。」にします"
+  (interactive)
+  (replace-punctuation "，" "、" "．" "。"))
+(defun replace-punctuation-comma-maru ()
+  "選択領域またはバッファ全体の句読点を「，。」にします"
+  (interactive)
+  (replace-punctuation "、" "，" "．" "。"))
+(defun replace-punctuation-comma-period ()
+  "選択領域またはバッファ全体の句読点を「，．」にします"
+  (interactive)
+  (replace-punctuation "、" "，" "。" "．"))
+(defalias 'replace-punctuation-o 'replace-punctuation-ten-maru)
+(defalias 'replace-punctuation-\, 'replace-punctuation-comma-maru)
+(defalias 'replace-punctuation-. 'replace-punctuation-comma-period)
+(defalias 'tenmaru 'replace-punctuation-ten-maru)
+(defalias 'commamaru 'replace-punctuation-comma-maru)
+(defalias 'commaperiod 'replace-punctuation-comma-period)
+
+(global-set-key [f11] 'replace-punctuation-o)
+(global-set-key [f12] 'replace-punctuation-.)
+
+;; cperl-mode
+(autoload 'cperl-mode "cperl-mode" "alternate mode for editing Perl programs" t)
+(add-to-list 'auto-mode-alist '("\.\([pP][Llm]\|al\|t\|cgi\)\'" . cperl-mode))
+(add-to-list 'interpreter-mode-alist '("perl" . cperl-mode))
+(add-to-list 'interpreter-mode-alist '("perl5" . cperl-mode))
+(add-to-list 'interpreter-mode-alist '("miniperl" . cperl-mode))
+
+(defalias 'perl-mode 'cperl-mode)
+
+(setq cperl-indent-level 4
+cperl-continued-statement-offset 4
+cperl-close-paren-offset -4
+cperl-label-offset -4
+cperl-comment-column 40
+cperl-highlight-variables-indiscriminately t
+cperl-indent-parens-as-block t
+cperl-tab-always-indent nil
+cperl-font-lock t)
+
+(add-hook 'cperl-mode-hook 
+          (function (lambda ()
+                      (set-face-background 'cperl-hash-face "black")
+                      (set-face-background 'cperl-array-face "black")
+		      )))
+(setq cperl-electric-backspace-untabify nil)
+
+(require 'flycheck)
+(add-hook 'after-init-hook #'global-flycheck-mode)
+(global-set-key (kbd "\C-a n") 'flycheck-next-error)
+(global-set-key (kbd "\C-a p") 'flycheck-previous-error)
+(global-set-key (kbd "\C-a d") 'flycheck-list-errors)
+(setq flycheck-display-errors-delay 0.3)
+
+(require 'auto-complete)
+(require 'auto-complete-config)    ; 必須ではないですが一応
+(global-auto-complete-mode t)
+(ac-set-trigger-key "TAB")
+(setq ac-use-menu-map t)
+(setq ac-use-fuzzy t)  
+(add-to-list 'ac-modes 'yatex-mode)
+
+;; 自動改行をoffにする
+(setq text-mode-hook 'turn-off-auto-fill)
+
+(require 'rainbow-delimiters)
+(add-hook 'prog-mode-hook 'rainbow-delimiters-mode)
+
+;; 括弧の色を強調する設定
+(require 'cl-lib)
+(require 'color)
+(defun rainbow-delimiters-using-stronger-colors ()
+  (interactive)
+  (cl-loop
+   for index from 1 to rainbow-delimiters-max-face-count
+   do
+   (let ((face (intern (format "rainbow-delimiters-depth-%d-face" index))))
+    (cl-callf color-saturate-name (face-foreground face) 30))))
+(add-hook 'emacs-startup-hook 'rainbow-delimiters-using-stronger-colors)
+
+(require 'volatile-highlights)
+(volatile-highlights-mode t)
+
+;; expand-region
+(require 'expand-region)
+(global-set-key (kbd "C-@") 'er/expand-region)
+(global-set-key (kbd "C-M-@") 'er/contract-region)
+
+(require 'flycheck-pos-tip)
+(eval-after-load 'flycheck
+  '(custom-set-variables
+    '(flycheck-display-errors-function #'flycheck-pos-tip-error-messages)))
+
+(require 'smartparens-config)
+(smartparens-global-mode t)
+(with-eval-after-load 'cperl-mode
+  (define-key cperl-mode-map "{" nil))
+
+;; Aspell
+(setq-default ispell-program-name "aspell") 
+(eval-after-load "ispell"
+ '(add-to-list 'ispell-skip-region-alist '("[^\000-\377]+")))
+;; 
+(global-set-key (kbd "C-M-$") 'ispell-complete-word)
+
+(require 'multi-term)
+(setq multi-term-program shell-file-name)
+(global-set-key (kbd "C-c t") '(lambda ()
+                                (interactive)
+                                (if (get-buffer "*terminal<1>*")
+                                    (switch-to-buffer "*terminal<1>*")
+				  (multi-term))))
+
+(require 'shell-pop)
+(custom-set-variables
+ '(shell-pop-shell-type (quote ("multi-term" "*teiminal<1>*" (lambda nil (multi-term)))))
+ '(shell-pop-set-internal-mode "multi-term")
+ '(shell-pop-term-shell "/bin/tcsh")
+ '(shell-pop-window-height 30)
+ '(shell-pop-window-position "bottom"))
+
+(global-set-key [f9] 'shell-pop)
+
+(require 'auto-async-byte-compile)
+(setq auto-async-byte-compile-exclude-files-regexp "/junk")
+(add-hook 'emacs-lisp-mode-hook 'enable-auto-async-byte-compile-mode)
+
